@@ -1,6 +1,6 @@
 # TimeSeriesAnalyzer
 
-[![Testing](https://github.com/sinatra/sinatra/actions/workflows/test.yml/badge.svg)](https://github.com/KuryataDanil/TimeSeriesAnalyzer/blob/master/.github/workflows/main.yml)
+[![Testing](https://github.com/sinatra/sinatra/actions/workflows/test.yml/badge.svg)](https://github.com/KuryataDanil/TimeSeriesAnalyzer/actions/workflows/main.yml)
 
 
 TODO: Delete this and the text below, and describe your gem
