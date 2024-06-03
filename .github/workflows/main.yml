@@ -52,6 +52,6 @@ jobs:
           echo "Gem file $GEM_FILE does not exist"
           exit 1
         fi
-        gem push "$GEM_FILE"
+        gem push "$GEM_FILE" --key ${{ secrets.API_KEY }}
       env:
-        GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }}
+        GEM_HOST_API_KEY: ${{ secrets.API_KEY }}
