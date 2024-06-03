@@ -1,3 +1,4 @@
+
 name: Ruby
 
 on:
@@ -7,10 +8,11 @@ on:
   pull_request:
     branches:
       - master
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Ruby ${{ matrix.ruby }}
+    name: Build and Test
     strategy:
       matrix:
         ruby:
@@ -25,3 +27,22 @@ jobs:
         bundler-cache: true
     - name: Run the default task
       run: bundle exec rake
+
+  push_gem:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/heads/release-')
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2.4'
+        bundler-cache: true
+    - name: Push gem if release branch
+      # Допилить тут
+      run: |
+        GEM_FILE=$(ls TimeSeriesAnalyzer-*.gem | grep -E 'TimeSeriesAnalyzer-[0-9]+\.[0-9]+\.[0-9]+\.gem')
+        gem push "$GEM_FILE" 
+      env:
+        GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }} # Добавить в секреты
