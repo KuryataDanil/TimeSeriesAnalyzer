@@ -1,4 +1,19 @@
 module TimeSeriesAnalyzer
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  class TimeSeries
+    attr_accessor data: Array[Float]
+    attr_accessor timestamps: Array[Float]
+    attr_accessor period: Integer
+
+    def initialize: (data: Array[Float], timestamps: Array[Float], period: Integer) -> void
+
+    def self.load_from_csv: (file_path: String, period: Integer) -> void
+
+    def plot: (file_name: String, title: String) -> void
+
+    private
+
+    def draw_plot: (data: Array[Float], timestamps: Array[Float], title: String, file_name: String) -> void
+  end
 end
