@@ -30,7 +30,7 @@ jobs:
   push_gem:
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.event.pull_request.head_ref, 'release-')
+    if: startsWith(github.event.pull_request.head_ref, 'release-\([0-9]\+\.[0-9]\+\.[0-9]\+\)')
     steps:
     - uses: actions/checkout@v3
     - name: Set up Ruby
