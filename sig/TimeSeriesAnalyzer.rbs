@@ -1,4 +1,70 @@
 module TimeSeriesAnalyzer
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  class TimeSeries
+    attr_accessor data: Array[Float]
+    attr_accessor timestamps: Array[Time]
+    attr_accessor period: Integer
+
+    def initialize: (data: Array[Float], timestamps: Array[Time], period: Integer) -> void
+
+    def self.load_from_csv: (file_path: String, period: Integer) -> void
+
+    def decompose: () -> { trend: TimeSeries, seasonal: TimeSeries, residual: TimeSeries }
+
+    def detect_anomalies: -> { trend: TimeSeries, seasonal: TimeSeries }
+
+    def exponential_smoothing: (alpha: Float) -> void
+
+    def forecast: (steps: Integer) -> Array[Float]
+
+    def moving_average: (window_size: Integer) -> TimeSeries
+
+    def plot: (file_name: String, title: String) -> void
+
+    private
+
+    def draw_plot: (data: Array[Float], timestamps: Array[Time], title: String, file_name: String) -> void
+
+    class TrendComponent
+      attr_accessor data: Array[Float]
+
+      def initialize: (data: Array[Float]) -> void
+
+      def accurate_fit: () -> Array[Float]
+
+      def fit: () -> Array[Float]
+
+      private
+
+      def best_polynomial_degree: (x: Array[Float], y: Array[Float]) -> Integer
+
+      def polynomial_coefficients: (x: Array[Float], y: Array[Float], degree: Integer) -> Array[Float]
+
+      def polynomial_trend: (x: Array[Float], coefficients: Array[Float]) -> Array[Float]
+
+      def rmse: (y_true: Array[Float], y_pred: Array[Float]) -> Float
+    end
+
+    class SeasonalComponent
+      attr_accessor data: Array[Float]
+      attr_accessor period: Integer
+
+      def fit: () -> Array[Float]
+
+      private
+
+      def calculate_autocorrelation: (lag: Integer) -> Float
+
+      def detect_period: () -> Integer
+
+      def mean: (arr: Array[Float | Integer]) -> Float
+    end
+
+    def forecast_arima: (data: Array[Float], steps: Integer) -> Array[Float]
+
+    def mean: (arr: Array[Float | Integer]) -> Float
+
+    def variance: (arr: Array[Float | Integer]) -> Float
+  end
 end
