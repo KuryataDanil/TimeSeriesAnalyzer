@@ -113,6 +113,7 @@ module TimeSeriesAnalyzer
       draw.annotate(canvas, 0, 0, 0, padding / 2, title) { |options|
         options.font_weight = Magick::BoldWeight
         options.pointsize = 20
+        options.font = "Arial"
         options.gravity = Magick::NorthGravity
       }
 
@@ -146,6 +147,7 @@ module TimeSeriesAnalyzer
         y = i * plot_area_height / count_y - plot_area_height / 2
         draw.annotate(canvas, 0, 0, width - padding + 10, y, sprintf('%.2f', value)) { |options|
           options.gravity = Magick::EastGravity
+          options.font = "Arial"
           options.pointsize = plot_area_height / 33.3
         }
       end
@@ -155,6 +157,7 @@ module TimeSeriesAnalyzer
         x = index * plot_area_width / (timestamps.size == 1 ? 1 : timestamps.size - 1) - plot_area_width / 2
         draw.annotate(canvas, 0, 0, x, height - padding / 2, timestamp.strftime('%Y-%m-%d')) { |options|
           options.gravity = Magick::NorthGravity
+          options.font = "Arial"
           options.pointsize = 10 > plot_area_width / 144.4 ? 10 : plot_area_width / 144.4
         }
       end
