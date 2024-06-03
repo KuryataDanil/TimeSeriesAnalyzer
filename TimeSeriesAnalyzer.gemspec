@@ -4,7 +4,7 @@ require_relative "lib/TimeSeriesAnalyzer/version"
 
 Gem::Specification.new do |spec|
   spec.name = "TimeSeriesAnalyzer"
-  spec.version = TimeSeriesAnalyzer::VERSION
+  spec.version  = '0.1.0'
   spec.authors = ["KuryataDanil"]
 
   spec.summary = "pspspsp"
