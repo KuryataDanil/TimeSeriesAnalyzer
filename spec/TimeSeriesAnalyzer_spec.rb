@@ -107,4 +107,26 @@ RSpec.describe TimeSeriesAnalyzer do
       end
     end
   end
+
+  it "Forecast" do
+    time_series = TimeSeriesAnalyzer::TimeSeries.load_from_csv('spec/files for tests/data_test_season.csv')
+    forecasted_values = time_series.forecast(10)
+    expect(forecasted_values).to eq [69.09522891566422, 72.04529961859565, 74.85701965269419, 77.53687730569736, 80.09105658146657, 82.52545147011224, 84.84567954888698, 87.057094945232, 89.16480069189043, 91.17366050259781]
+  end
+
+  describe "Anomalies" do
+    it "Exist" do
+      time_series = TimeSeriesAnalyzer::TimeSeries.load_from_csv('spec/files for tests/data_test_anomaly.csv')
+      anomalies = time_series.detect_anomalies
+      expect(anomalies.size).to eq 1
+      expect(anomalies[0][:timestamp].strftime('%Y-%m-%d')).to eq "2023-12-01"
+      expect(anomalies[0][:value]).to eq 0
+    end
+
+    it "0 anomalies" do
+      time_series = TimeSeriesAnalyzer::TimeSeries.load_from_csv('spec/files for tests/data_test_season.csv')
+      anomalies = time_series.detect_anomalies
+      expect(anomalies.size).to eq 0
+    end
+  end
 end

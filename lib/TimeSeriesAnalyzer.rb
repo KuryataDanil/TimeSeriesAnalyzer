@@ -42,7 +42,7 @@ module TimeSeriesAnalyzer
     #Возращает числовой ряд, отображающий экспоненциальное сглаживание исходного
     def exponential_smoothing(alpha)
       smoothed_data = [@data.first]
-      @data.each_cons(2) do |previous, current|
+      @data.each_cons(2) do |_, current|
         smoothed_data << alpha * current + (1 - alpha) * smoothed_data.last
       end
       TimeSeries.new(smoothed_data, @timestamps)
@@ -60,7 +60,40 @@ module TimeSeriesAnalyzer
       }
     end
 
+    #Функция, возвращающая найденные аномалии в числовом ряду
+    def detect_anomalies
+      threshold = 3 * Math.sqrt(variance(@data))
+      mean = mean(@data)
+      @data.each_with_index.select do |value, _|
+        (value - mean).abs > threshold
+      end.map { |value, index| { timestamp: @timestamps[index], value: value } }
+    end
+
+    #Функция, прогнозирующая следующие значения (прогноз на основе последующего изменения только остатков)
+    def forecast(steps)
+      trend = TrendComponent.new(@data).fit
+      seasonal = SeasonalComponent.new(@data, @period).fit
+
+      trend_seasonal = trend.zip(seasonal).map { |t, s| t + s.to_f }
+      residuals = @data.zip(trend_seasonal).map { |d, ts| d - ts }
+
+      forecast_residuals = forecast_arima(residuals, steps)
+      last_trend = trend.last
+      last_seasonal = seasonal.last
+
+      (1..steps).map do |step|
+        last_trend + last_seasonal + forecast_residuals[step - 1]
+      end
+    end
+
     private
+    def forecast_arima(data, steps)
+      phi = mean(data.each_cons(2).map { |x, y| y / x.to_f })
+
+      last_value = data.last
+      (1..steps).map { |step| last_value * (phi**step) }
+    end
+
     #Визуализация ряда в .png файл
     def draw_plot(data, timestamps, title, file_name)
       width = 200 + timestamps.size * 50
@@ -106,7 +139,7 @@ module TimeSeriesAnalyzer
       end
 
       # Draw labels on Y axis
-      count_y = 10;
+      count_y = 10
       label_interval = value_range / count_y
       (0..count_y).each do |i|
         value = (min_value + (count_y - i) * label_interval)
@@ -161,7 +194,7 @@ module TimeSeriesAnalyzer
         # Получаем коэффициенты полинома
         coefficients = polynomial_coefficients(x, y, best_degree)
 
-        accurate_x = (0...@data.size*10-9).map { |x| x.to_f/10 }
+        accurate_x = (0...@data.size*10-9).map { |xx| xx.to_f/10 }
         # Вычисляем значения полиномиального тренда
         polynomial_trend(accurate_x, coefficients)
       end

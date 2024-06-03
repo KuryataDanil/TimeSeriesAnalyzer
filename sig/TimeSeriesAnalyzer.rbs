@@ -3,16 +3,20 @@ module TimeSeriesAnalyzer
 
   class TimeSeries
     attr_accessor data: Array[Float]
-    attr_accessor timestamps: Array[Float]
+    attr_accessor timestamps: Array[Time]
     attr_accessor period: Integer
 
-    def initialize: (data: Array[Float], timestamps: Array[Float], period: Integer) -> void
+    def initialize: (data: Array[Float], timestamps: Array[Time], period: Integer) -> void
 
     def self.load_from_csv: (file_path: String, period: Integer) -> void
 
     def decompose: () -> { trend: TimeSeries, seasonal: TimeSeries, residual: TimeSeries }
 
+    def detect_anomalies: -> { trend: TimeSeries, seasonal: TimeSeries }
+
     def exponential_smoothing: (alpha: Float) -> void
+
+    def forecast: (steps: Integer) -> Array[Float]
 
     def moving_average: (window_size: Integer) -> TimeSeries
 
@@ -20,7 +24,7 @@ module TimeSeriesAnalyzer
 
     private
 
-    def draw_plot: (data: Array[Float], timestamps: Array[Float], title: String, file_name: String) -> void
+    def draw_plot: (data: Array[Float], timestamps: Array[Time], title: String, file_name: String) -> void
 
     class TrendComponent
       attr_accessor data: Array[Float]
@@ -57,8 +61,10 @@ module TimeSeriesAnalyzer
       def mean: (arr: Array[Float | Integer]) -> Float
     end
 
+    def forecast_arima: (data: Array[Float], steps: Integer) -> Array[Float]
+
     def mean: (arr: Array[Float | Integer]) -> Float
 
-    def variance: (arr: Array[Float | Integer]) -> Array[Float | Integer]
+    def variance: (arr: Array[Float | Integer]) -> Float
   end
 end
