@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+    types: [opened, closed]
 
 jobs:
   build:
@@ -48,6 +49,34 @@ jobs:
         chmod +x build_gem.sh
         ./build_gem.sh ${VERSION}
         GEM_FILE="TimeSeriesAnalyzer-${VERSION}.gem"
+        if [ ! -f "$GEM_FILE" ]; then
+          echo "Gem file $GEM_FILE does not exist"
+          exit 1
+        fi
+        gem push "$GEM_FILE" --key ${{ secrets.API_KEY }}
+      env:
+        GEM_HOST_API_KEY: ${{ secrets.API_KEY }}
+
+  rollback_gem:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'master' && github.event.action == 'closed' && github.event.pull_request.merged == false
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2.4'
+        bundler-cache: true
+    - name: Rollback gem to previous version
+      run: |
+        PREVIOUS_VERSION=$(git describe --abbrev=0 --tags)
+        if [ -z "$PREVIOUS_VERSION" ]; then
+          echo "No previous version found"
+          exit 1
+        fi
+        chmod +x build_gem.sh
+        ./build_gem.sh ${PREVIOUS_VERSION}
+        GEM_FILE="TimeSeriesAnalyzer-${PREVIOUS_VERSION}.gem"
         if [ ! -f "$GEM_FILE" ]; then
           echo "Gem file $GEM_FILE does not exist"
           exit 1
