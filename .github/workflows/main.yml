@@ -45,6 +45,8 @@ jobs:
           echo "Branch name does not match release pattern"
           exit 1
         fi
+        chmod +x build_gem.sh
+        ./build_gem.sh ${VERSION}
         GEM_FILE="TimeSeriesAnalyzer-${VERSION}.gem"
         if [ ! -f "$GEM_FILE" ]; then
           echo "Gem file $GEM_FILE does not exist"
