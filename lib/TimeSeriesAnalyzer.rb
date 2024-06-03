@@ -48,6 +48,18 @@ module TimeSeriesAnalyzer
       TimeSeries.new(smoothed_data, @timestamps)
     end
 
+    #Разложение ряда на тренд, сезонную компоненту и остаток
+    def decompose
+      trend = TrendComponent.new(@data).fit
+      seasonal = SeasonalComponent.new(@data, @period).fit
+      residual = @data.zip(trend, seasonal).map { |d, t, s| d - t - s }
+      {
+        trend: TimeSeries.new(TrendComponent.new(@data).accurate_fit, @timestamps),
+        seasonal: TimeSeries.new(seasonal, @timestamps),
+        residual: TimeSeries.new(residual, @timestamps)
+      }
+    end
+
     private
     #Визуализация ряда в .png файл
     def draw_plot(data, timestamps, title, file_name)
@@ -81,8 +93,6 @@ module TimeSeriesAnalyzer
       draw.stroke_width(4)
       draw.stroke_linejoin('round')
 
-
-      x_correction = timestamps.size.to_f / data.size
       # Draw data
       data.each_with_index.each_cons(2) do |(value1, index1), (value2, index2)|
         next if value1.nil? || value2.nil?
@@ -118,6 +128,152 @@ module TimeSeriesAnalyzer
 
       draw.draw(canvas)
       canvas.write(file_name)
+    end
+
+    class TrendComponent
+      def initialize(data)
+        @data = data
+      end
+
+      def fit
+        # Пример использования
+        x = (0...@data.size).to_a # Массив значений x (0, 1, 2, ...)
+        y = @data # Массив значений y (данные)
+
+        max_degree = x.size >= 8 ? 8 : x.size - 1
+        best_degree = best_polynomial_degree(x, y, max_degree)# Степень полинома
+
+        # Получаем коэффициенты полинома
+        coefficients = polynomial_coefficients(x, y, best_degree)
+
+        # Вычисляем значения полиномиального тренда
+        polynomial_trend(x, coefficients)
+      end
+
+      def accurate_fit
+        # Пример использования
+        x = (0...@data.size).to_a # Массив значений x (0, 1, 2, ...)
+        y = @data # Массив значений y (данные)
+
+        max_degree = x.size >= 8 ? 8 : x.size - 1
+        best_degree = best_polynomial_degree(x, y, max_degree)# Степень полинома
+
+        # Получаем коэффициенты полинома
+        coefficients = polynomial_coefficients(x, y, best_degree)
+
+        accurate_x = (0...@data.size*10-9).map { |x| x.to_f/10 }
+        # Вычисляем значения полиномиального тренда
+        polynomial_trend(accurate_x, coefficients)
+      end
+
+      private
+
+      # Функция для вычисления RMSE
+      def rmse(y_true, y_pred)
+        Math.sqrt(y_true.zip(y_pred).map { |y_t, y_p| (y_t - y_p)**2 }.sum / y_true.size)
+      end
+
+      # Функция для определения лучшей степени полинома
+      def best_polynomial_degree(x, y, max_degree)
+        best_degree = 0
+        best_rmse = Float::INFINITY
+
+        (1..max_degree).each do |degree|
+          coefficients = polynomial_coefficients(x, y, degree)
+          trend = polynomial_trend(x, coefficients)
+          current_rmse = rmse(y, trend)
+
+          if current_rmse < best_rmse
+            best_rmse = current_rmse
+            best_degree = degree
+          end
+        end
+
+        best_degree
+      end
+
+      def polynomial_coefficients(x, y, degree)
+        n = x.size
+        x_data = Array.new(n) { Array.new(degree + 1, 0.0) }
+
+        # Заполняем матрицу значениями x, x^2, x^3 и т.д.
+        (0...n).each do |i|
+          (0..degree).each do |j|
+            x_data[i][j] = x[i]**j
+          end
+        end
+
+        x_matrix = Matrix[*x_data]
+        y_matrix = Matrix.column_vector(y)
+
+        # Оцениваем коэффициенты полинома
+        ((x_matrix.t * x_matrix).inverse * x_matrix.t * y_matrix).transpose.to_a[0]
+      end
+
+      # Функция для вычисления значений полиномиального тренда
+      def polynomial_trend(x, coefficients)
+        trend = Array.new(x.size, 0.0)
+        x.each_with_index do |x_val, index|
+          coefficients.each_with_index do |coeff, i|
+            trend[index] += coeff * (x_val**i)
+          end
+        end
+        trend
+      end
+    end
+
+    class SeasonalComponent
+      def initialize(data, period = -1)
+        @data = data
+        @period = period == -1 ? detect_period : period
+      end
+
+      def fit
+        if @period == 1
+          return @data.map {|| 0.0}
+        end
+        period_means = Array.new(@period) { |i| mean(@data.each_slice(@period).map { |slice| slice[i] }.compact) }
+        @data.each_with_index.map { |_, index| period_means[index % @period] }
+      end
+
+      private
+
+      def detect_period
+        max_lag = @data.size / 2 # Максимальное значение лага
+        autocorrelation = (1..max_lag).map { |lag| calculate_autocorrelation(lag) }
+
+        # Определяем период сезонности
+        autocorrelation.index(autocorrelation.max) + 1
+      end
+
+      private
+
+      def calculate_autocorrelation(lag)
+        mean = mean(@data)
+        n = @data.size
+
+        numerator = (0...n - lag).map { |i| (@data[i] - mean) * (@data[i + lag] - mean) }.sum
+        denominator = (0...n).map { |i| (@data[i] - mean)**2 }.sum
+
+        numerator / denominator
+      end
+
+      #Среднее арифметическое значений в массиве
+      def mean(arr)
+        arr.sum.to_f / arr.size
+      end
+    end
+
+
+    #Среднее арифметическое значений в массиве
+    def mean(arr)
+      arr.sum.to_f / arr.size
+    end
+
+    #Вычисление дисперсии значений в массиве
+    def variance(arr)
+      m = mean(arr)
+      arr.map { |v| (v - m)**2 }.sum / (arr.size - 1)
     end
   end
 end
