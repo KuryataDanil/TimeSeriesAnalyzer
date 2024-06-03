@@ -129,4 +129,9 @@ RSpec.describe TimeSeriesAnalyzer do
       expect(anomalies.size).to eq 0
     end
   end
+
+  it "Draw Series" do
+    time_series = TimeSeriesAnalyzer::TimeSeries.load_from_csv('spec/files for tests/data_test_season.csv')
+    time_series.plot("spec/files for tests/test_output.png")
+  end
 end
