@@ -1,4 +1,3 @@
-
 name: Ruby
 
 on:
@@ -31,7 +30,7 @@ jobs:
   push_gem:
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.ref, 'refs/heads/release-')
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master' && startsWith(github.event.pull_request.head.ref, 'release-')
     steps:
     - uses: actions/checkout@v3
     - name: Set up Ruby
@@ -40,9 +39,17 @@ jobs:
         ruby-version: '3.2.4'
         bundler-cache: true
     - name: Push gem if release branch
-      # Допилить тут
       run: |
-        GEM_FILE=$(ls TimeSeriesAnalyzer-*.gem | grep -E 'TimeSeriesAnalyzer-[0-9]+\.[0-9]+\.[0-9]+\.gem')
-        gem push "$GEM_FILE" 
+        VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed -n 's/^release-\([0-9]\+\.[0-9]\+\.[0-9]\+\)$/\1/p')
+        if [ -z "$VERSION" ]; then
+          echo "Branch name does not match release pattern"
+          exit 1
+        fi
+        GEM_FILE="TimeSeriesAnalyzer-${VERSION}.gem"
+        if [ ! -f "$GEM_FILE" ]; then
+          echo "Gem file $GEM_FILE does not exist"
+          exit 1
+        fi
+        gem push "$GEM_FILE"
       env:
-        GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }} # Добавить в секреты
+        GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }}
