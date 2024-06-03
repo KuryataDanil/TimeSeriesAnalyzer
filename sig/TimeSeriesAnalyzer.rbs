@@ -10,6 +10,10 @@ module TimeSeriesAnalyzer
 
     def self.load_from_csv: (file_path: String, period: Integer) -> void
 
+    def exponential_smoothing: (alpha: Float) -> void
+
+    def moving_average: (window_size: Integer) -> TimeSeries
+
     def plot: (file_name: String, title: String) -> void
 
     private

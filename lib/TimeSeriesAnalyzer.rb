@@ -32,6 +32,22 @@ module TimeSeriesAnalyzer
       draw_plot(@data, @timestamps, title, file_name)
     end
 
+    #Возращает числовой ряд, отображающий скользящее среднее исходного
+    def moving_average(window_size)
+      ma_data = @data.each_cons(window_size).map { |window| window.sum / window_size }
+      padding = Array.new(window_size - 1, nil)
+      TimeSeries.new(padding + ma_data, @timestamps)
+    end
+
+    #Возращает числовой ряд, отображающий экспоненциальное сглаживание исходного
+    def exponential_smoothing(alpha)
+      smoothed_data = [@data.first]
+      @data.each_cons(2) do |previous, current|
+        smoothed_data << alpha * current + (1 - alpha) * smoothed_data.last
+      end
+      TimeSeries.new(smoothed_data, @timestamps)
+    end
+
     private
     #Визуализация ряда в .png файл
     def draw_plot(data, timestamps, title, file_name)
