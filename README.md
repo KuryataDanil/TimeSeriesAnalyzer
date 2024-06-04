@@ -10,6 +10,17 @@ TimeSeriesAnalyzer is designed for solving and visualizing numerical series
 gem install TimeSeriesAnalyzer
 ```
 
+The rmagick gem must be installed for it to work properly https://imagemagick.org/script/download.php#windows
+
+<img width="75%" src="https://github.com/rmagick/rmagick/assets/199156/494e7963-cca5-4cb5-b28a-6c4d76adce5d" />
+
+Then you need to go to the project terminal
+```shell
+set CPATH="C:\Program Files (x86)\ImageMagick-[VERSION]-Q16\include"
+set LIBRARY_PATH="C:\Program Files (x86)\ImageMagick-[VERSION]-Q16\lib"
+em install rmagick 
+```
+
 ## Usage
 
 Uploading data from a CSV file:
