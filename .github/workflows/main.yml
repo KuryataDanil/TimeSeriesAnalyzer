@@ -24,13 +24,18 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y gsfonts
     - name: Run the default task
       run: bundle exec rake
+      
 
   push_gem:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master' && startsWith(github.event.pull_request.head.ref, 'release-')
+    if: github.event.pull_request.base.ref == 'master' && startsWith(github.event.pull_request.title, 'release-')
     steps:
     - uses: actions/checkout@v3
     - name: Set up Ruby
@@ -40,16 +45,46 @@ jobs:
         bundler-cache: true
     - name: Push gem if release branch
       run: |
-        VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed -n 's/^release-\([0-9]\+\.[0-9]\+\.[0-9]\+\)$/\1/p')
+        VERSION=$(echo "${{ github.event.pull_request.title }}" | sed -n 's/^release-\([0-9]\+\.[0-9]\+\.[0-9]\+\)$/\1/p')
         if [ -z "$VERSION" ]; then
           echo "Branch name does not match release pattern"
           exit 1
         fi
+        chmod +x build_gem.sh
+        ./build_gem.sh ${VERSION}
         GEM_FILE="TimeSeriesAnalyzer-${VERSION}.gem"
         if [ ! -f "$GEM_FILE" ]; then
           echo "Gem file $GEM_FILE does not exist"
           exit 1
         fi
-        gem push "$GEM_FILE"
+        gem push "$GEM_FILE" --key ${{ secrets.API_KEY }}
       env:
-        GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }}
+        GEM_HOST_API_KEY: ${{ secrets.API_KEY }}
+###
+#  rollback_gem:
+#    runs-on: ubuntu-latest
+#    if: github.event.pull_request.base.ref == 'master' && github.event.action == 'closed' && github.event.pull_request.merged == false
+#    steps:
+#    - uses: actions/checkout@v3
+#    - name: Set up Ruby
+#      uses: ruby/setup-ruby@v1
+#      with:
+#        ruby-version: '3.2.4'
+#        bundler-cache: true
+#    - name: Rollback gem to previous version
+#      run: |
+#        PREVIOUS_VERSION=$(git describe --abbrev=0 --tags)
+#        if [ -z "$PREVIOUS_VERSION" ]; then
+#          echo "No previous version found"
+#          exit 1
+#       fi
+#       chmod +x build_gem.sh
+#        ./build_gem.sh ${PREVIOUS_VERSION}
+#        GEM_FILE="TimeSeriesAnalyzer-${PREVIOUS_VERSION}.gem"
+#        if [ ! -f "$GEM_FILE" ]; then
+#          echo "Gem file $GEM_FILE does not exist"
+#          exit 1
+#        fi
+#        gem push "$GEM_FILE" --key ${{ secrets.API_KEY }}
+#      env:
+#        GEM_HOST_API_KEY: ${{ secrets.API_KEY }}
