@@ -35,7 +35,7 @@ jobs:
   push_gem:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event.pull_request.base.ref == 'master' && startsWith(github.event.pull_request.title, 'release-[0-9]+\.[0-9]+\.[0-9]+')
+    if: github.event.pull_request.base.ref == 'master' && startsWith(github.event.pull_request.title, 'release-[0-9]+\.[0-9]+\.[0-9]+$')
     steps:
     - uses: actions/checkout@v3
     - name: Set up Ruby
