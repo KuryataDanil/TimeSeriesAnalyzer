@@ -18,7 +18,7 @@ Then you need to go to the project terminal
 ```shell
 set CPATH="C:\Program Files (x86)\ImageMagick-[VERSION]-Q16\include"
 set LIBRARY_PATH="C:\Program Files (x86)\ImageMagick-[VERSION]-Q16\lib"
-em install rmagick 
+gem install rmagick 
 ```
 
 ## Usage
