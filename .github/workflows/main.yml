@@ -27,7 +27,7 @@ jobs:
         bundler-cache: true
     - name: Run the default task
       run: |
-        sudo pip install gsfonts
+        sudo-get install -y gsfonts
         bundle exec rake
       
 
