@@ -25,10 +25,12 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Run the default task
+    - name: Install dependencies
       run: |
-        sudo-get install -y gsfonts
-        bundle exec rake
+        sudo apt-get update -y
+        sudo apt-get install -y gsfonts
+    - name: Run the default task
+      run: bundle exec rake
       
 
   push_gem:
