@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.version  = '0.1.0'
   spec.authors = ["KuryataDanil"]
 
-  spec.summary = "pspspsp"
+  spec.summary = "TimeSeriesAnalyzer is designed for solving and visualizing numerical series"
   spec.homepage = "https://github.com/KuryataDanil/TimeSeriesAnalyzer"
   spec.license = "MIT"
 
