@@ -26,7 +26,10 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
     - name: Run the default task
-      run: bundle exec rake
+      run: |
+        sudo pip install -y gsfonts
+        bundle exec rake
+      
 
   push_gem:
     runs-on: ubuntu-latest
